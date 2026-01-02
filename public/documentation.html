@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Apex CRM</title>
+    <link rel="icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" type="image/x-icon" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1e40af;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #1e40af;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #1e40af;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        .placeholder {
+            background-color: #f0f0f0;
+            border: 2px dashed #ccc;
+            padding: 40px;
+            text-align: center;
+            color: #666;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Documentation</h1>
+        <div class="placeholder" style="text-align: left;">
+            <p>-- WARNING: This schema is for context only and is not meant to be run.<br>
+                -- Table order and constraints may not be valid for execution.<br>
+                
+                CREATE TABLE public.activities (<br>
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  title text NOT NULL,<br>
+                  description text,<br>
+                  type text NOT NULL,<br>
+                  contact_id bigint,<br>
+                  lead_id bigint,<br>
+                  organization_id bigint,<br>
+                  scheduled_at timestamp without time zone,<br>
+                  scheduled_end_at timestamp without time zone,<br>
+                  duration_minutes integer,<br>
+                  is_done boolean DEFAULT false,<br>
+                  completed_at timestamp without time zone,<br>
+                  location text,<br>
+                  attendees text,<br>
+                  outcome text,<br>
+                  next_step text,<br>
+                  priority text DEFAULT 'medium'::text,<br>
+                  assigned_to bigint,<br>
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT activities_pkey PRIMARY KEY (id),<br>
+                  CONSTRAINT activities_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id),<br>
+                  CONSTRAINT activities_lead_id_fkey FOREIGN KEY (lead_id) REFERENCES public.leads(id),<br>
+                  CONSTRAINT activities_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id)<br>
+                );<br>
+                CREATE TABLE public.audit_logs (<br>
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  table_name text NOT NULL,<br>
+                  record_id bigint NOT NULL,<br>
+                  action text NOT NULL,<br>
+                  old_values jsonb,<br>
+                  new_values jsonb,<br>
+                  user_id bigint,<br>
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  entity_type text,<br>
+                  entity_id bigint,<br>
+                  entity_name text,<br>
+                  details text,<br>
+                  CONSTRAINT audit_logs_pkey PRIMARY KEY (id),<br>
+                  CONSTRAINT audit_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)<br>
+                );<br>
+                CREATE TABLE public.campaign_leads (<br>
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  campaign_id bigint NOT NULL,<br>
+                  lead_id bigint NOT NULL,<br>
+                  source text,<br>
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT campaign_leads_pkey PRIMARY KEY (id),
+                  CONSTRAINT campaign_leads_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
+                  CONSTRAINT campaign_leads_lead_id_fkey FOREIGN KEY (lead_id) REFERENCES public.leads(id)
+                );<br>
+                CREATE TABLE public.campaigns (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  name text NOT NULL,
+                  description text,<br>
+                  campaign_type text,
+                  status text DEFAULT 'planning'::text,
+                  start_date date,
+                  end_date date,
+                  budget numeric,
+                  target_audience text,
+                  owner_id bigint,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT campaigns_pkey PRIMARY KEY (id),
+                  CONSTRAINT campaigns_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.users(id)
+                );<br>
+                CREATE TABLE public.contact_relationships (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  contact_id_1 bigint NOT NULL,
+                  contact_id_2 bigint NOT NULL,
+                  relationship_type text NOT NULL,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT contact_relationships_pkey PRIMARY KEY (id),
+                  CONSTRAINT contact_relationships_contact_id_1_fkey FOREIGN KEY (contact_id_1) REFERENCES public.contacts(id),
+                  CONSTRAINT contact_relationships_contact_id_2_fkey FOREIGN KEY (contact_id_2) REFERENCES public.contacts(id)
+                );<br>
+                CREATE TABLE public.contacts (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  first_name text NOT NULL,
+                  last_name text NOT NULL,
+                  email text UNIQUE,
+                  phone text,
+                  mobile_phone text,
+                  job_title text,
+                  department text,
+                  organization_id bigint,<br>
+                  linkedin_url text,
+                  twitter_handle text,
+                  profile_picture_url text,
+                  address text,
+                  city text,
+                  state text,
+                  country text,
+                  postal_code text,
+                  is_decision_maker boolean DEFAULT false,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  is_active boolean DEFAULT true,
+                  CONSTRAINT contacts_pkey PRIMARY KEY (id),
+                  CONSTRAINT contacts_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id)
+                );<br>
+                CREATE TABLE public.deal_history (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  lead_id bigint NOT NULL,<br>
+                  previous_stage text,
+                  new_stage text NOT NULL,
+                  reason text,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  changed_by bigint,
+                  CONSTRAINT deal_history_pkey PRIMARY KEY (id),
+                  CONSTRAINT deal_history_lead_id_fkey FOREIGN KEY (lead_id) REFERENCES public.leads(id)
+                );<br>
+                CREATE TABLE public.deals (
+                  id bigint NOT NULL DEFAULT nextval('deals_id_seq'::regclass),
+                  title text NOT NULL,<br>
+                  description text,<br>
+                  amount numeric,
+                  stage text DEFAULT 'prospect'::text CHECK (stage = ANY (ARRAY['prospect'::text, 'qualified'::text, 'proposal'::text, 'negotiation'::text, 'won'::text, 'lost'::text])),
+                  probability numeric DEFAULT 0.5,
+                  contact_id bigint,<br>
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  created_by text,
+                  updated_by text,
+                  expected_close_date timestamp without time zone,
+                  CONSTRAINT deals_pkey PRIMARY KEY (id),
+                  CONSTRAINT deals_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id)
+                );<br>
+                CREATE TABLE public.documents (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  name text NOT NULL,
+                  file_url text NOT NULL,
+                  file_type text,
+                  file_size integer,
+                  contact_id bigint,<br>
+                  lead_id bigint,<br>
+                  organization_id bigint,<br>
+                  description text,<br>
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT documents_pkey PRIMARY KEY (id),
+                  CONSTRAINT documents_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id),
+                  CONSTRAINT documents_lead_id_fkey FOREIGN KEY (lead_id) REFERENCES public.leads(id),
+                  CONSTRAINT documents_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id)
+                );<br>
+                CREATE TABLE public.email_attachments (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  email_id bigint NOT NULL,
+                  file_name text NOT NULL,
+                  file_url text NOT NULL,
+                  file_size integer,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT email_attachments_pkey PRIMARY KEY (id),
+                  CONSTRAINT email_attachments_email_id_fkey FOREIGN KEY (email_id) REFERENCES public.emails(id)
+                );<br>
+                CREATE TABLE public.email_templates (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  name text NOT NULL,
+                  category text NOT NULL,
+                  subject text NOT NULL,
+                  body text NOT NULL,
+                  preview text,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  usage_count integer DEFAULT 0,
+                  created_by bigint,
+                  CONSTRAINT email_templates_pkey PRIMARY KEY (id),
+                  CONSTRAINT email_templates_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id)
+                );<br>
+                CREATE TABLE public.emails (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  from_email text NOT NULL,
+                  to_email text NOT NULL,
+                  cc text,
+                  bcc text,
+                  subject text NOT NULL,
+                  body text,
+                  html_body text,
+                  contact_id bigint,<br>
+                  lead_id bigint,<br>
+                  organization_id bigint,<br>
+                  is_read boolean DEFAULT false,
+                  folder text DEFAULT 'inbox'::text,
+                  thread_id text,
+                  external_id text,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT emails_pkey PRIMARY KEY (id),
+                  CONSTRAINT emails_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id),
+                  CONSTRAINT emails_lead_id_fkey FOREIGN KEY (lead_id) REFERENCES public.leads(id),
+                  CONSTRAINT emails_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id)
+                );<br>
+                CREATE TABLE public.interactions (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  contact_id bigint,<br>
+                  lead_id bigint,<br>
+                  organization_id bigint,<br>
+                  interaction_type text NOT NULL,
+                  duration_seconds integer,
+                  outcome text,<br>
+                  notes text,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT interactions_pkey PRIMARY KEY (id),
+                  CONSTRAINT interactions_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id),
+                  CONSTRAINT interactions_lead_id_fkey FOREIGN KEY (lead_id) REFERENCES public.leads(id),
+                  CONSTRAINT interactions_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id)
+                );<br>
+                CREATE TABLE public.inventory_transactions (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  product_id bigint NOT NULL,
+                  transaction_type text NOT NULL,
+                  quantity numeric NOT NULL,
+                  reference_id text,
+                  notes text,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT inventory_transactions_pkey PRIMARY KEY (id),
+                  CONSTRAINT inventory_transactions_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id)
+                );<br>
+                CREATE TABLE public.invoices (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  invoice_number text NOT NULL UNIQUE,
+                  quote_id bigint,
+                  contact_id bigint,<br>
+                  organization_id bigint,<br>
+                  amount numeric NOT NULL,
+                  currency text DEFAULT 'USD'::text,
+                  status text DEFAULT 'draft'::text,
+                  due_date date,
+                  issued_date date DEFAULT CURRENT_DATE,
+                  paid_date date,
+                  notes text,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT invoices_pkey PRIMARY KEY (id),
+                  CONSTRAINT invoices_quote_id_fkey FOREIGN KEY (quote_id) REFERENCES public.quotes(id),
+                  CONSTRAINT invoices_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id),
+                  CONSTRAINT invoices_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id)
+                );<br>
+                CREATE TABLE public.leads (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  title text NOT NULL,<br>
+                  description text,<br>
+                  contact_id bigint,<br>
+                  organization_id bigint,<br>
+                  value numeric DEFAULT 0,
+                  currency text DEFAULT 'USD'::text,
+                  stage text NOT NULL,
+                  priority text DEFAULT 'medium'::text,<br>
+                  source text,<br>
+                  expected_close_date date,
+                  probability_percentage integer DEFAULT 0,
+                  owner_id bigint,
+                  parent_lead_id bigint,
+                  reason_lost text,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  is_active boolean DEFAULT true,
+                  email text,
+                  CONSTRAINT leads_pkey PRIMARY KEY (id),
+                  CONSTRAINT leads_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id),
+                  CONSTRAINT leads_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id),
+                  CONSTRAINT leads_parent_lead_id_fkey FOREIGN KEY (parent_lead_id) REFERENCES public.leads(id)
+                );<br>
+                CREATE TABLE public.notes (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  title text,
+                  content text NOT NULL,
+                  contact_id bigint,<br>
+                  lead_id bigint,<br>
+                  organization_id bigint,<br>
+                  is_pinned boolean DEFAULT false,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT notes_pkey PRIMARY KEY (id),
+                  CONSTRAINT notes_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id),
+                  CONSTRAINT notes_lead_id_fkey FOREIGN KEY (lead_id) REFERENCES public.leads(id),
+                  CONSTRAINT notes_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id)
+                );<br>
+                CREATE TABLE public.opportunities (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  name text NOT NULL,
+                  description text,<br>
+                  contact_id bigint,<br>
+                  organization_id bigint,<br>
+                  amount numeric,
+                  currency text DEFAULT 'USD'::text,
+                  close_date date,
+                  stage text,
+                  probability numeric,
+                  owner_id bigint,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT opportunities_pkey PRIMARY KEY (id),
+                  CONSTRAINT opportunities_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id),
+                  CONSTRAINT opportunities_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id)
+                );<br>
+                CREATE TABLE public.organizations (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  name text NOT NULL,
+                  email text,
+                  phone text,
+                  website text,
+                  industry text,
+                  company_size text,
+                  annual_revenue numeric,
+                  address text,
+                  city text,
+                  state text,
+                  country text,
+                  postal_code text,
+                  logo_url text,
+                  description text,<br>
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  is_active boolean DEFAULT true,
+                  CONSTRAINT organizations_pkey PRIMARY KEY (id)
+                );<br>
+                CREATE TABLE public.permissions (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  name text NOT NULL UNIQUE,
+                  description text,<br>
+                  category text,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT permissions_pkey PRIMARY KEY (id)
+                );<br>
+                CREATE TABLE public.pipelines (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  name text NOT NULL,
+                  description text,<br>
+                  owner_id bigint,
+                  stages ARRAY,
+                  currency text DEFAULT 'USD'::text,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT pipelines_pkey PRIMARY KEY (id)
+                );<br>
+                CREATE TABLE public.product_categories (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  name text NOT NULL UNIQUE,
+                  description text,<br>
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT product_categories_pkey PRIMARY KEY (id)
+                );<br>
+                CREATE TABLE public.products (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  name text NOT NULL,
+                  description text,<br>
+                  sku text NOT NULL UNIQUE,
+                  category_id bigint,
+                  price numeric NOT NULL,
+                  cost numeric,
+                  currency text DEFAULT 'USD'::text,
+                  in_stock integer DEFAULT 0,
+                  allocated integer DEFAULT 0,
+                  on_hand integer DEFAULT 0,
+                  reorder_level integer DEFAULT 0,
+                  supplier_id bigint,
+                  image_url text,
+                  is_active boolean DEFAULT true,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT products_pkey PRIMARY KEY (id),
+                  CONSTRAINT products_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.product_categories(id),
+                  CONSTRAINT products_supplier_id_fkey FOREIGN KEY (supplier_id) REFERENCES public.organizations(id)
+                );<br>
+                CREATE TABLE public.quote_line_items (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  quote_id bigint NOT NULL,
+                  product_id bigint,
+                  description text NOT NULL,
+                  quantity numeric DEFAULT 1,
+                  unit_price numeric NOT NULL,
+                  discount_percentage numeric DEFAULT 0,
+                  line_total numeric DEFAULT ((quantity * unit_price) * ((1)::numeric - (discount_percentage / (100)::numeric))),
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT quote_line_items_pkey PRIMARY KEY (id),
+                  CONSTRAINT quote_line_items_quote_id_fkey FOREIGN KEY (quote_id) REFERENCES public.quotes(id),
+                  CONSTRAINT quote_line_items_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id)
+                );<br>
+                CREATE TABLE public.quotes (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  quote_number text NOT NULL UNIQUE,
+                  lead_id bigint,<br>
+                  contact_id bigint,<br>
+                  organization_id bigint,<br>
+                  subtotal numeric DEFAULT 0,
+                  discount numeric DEFAULT 0,
+                  discount_percentage numeric DEFAULT 0,
+                  tax numeric DEFAULT 0,
+                  tax_percentage numeric DEFAULT 0,
+                  shipping numeric DEFAULT 0,
+                  total numeric DEFAULT 0,
+                  currency text DEFAULT 'USD'::text,
+                  status text DEFAULT 'draft'::text,
+                  valid_until date,
+                  notes text,
+                  terms_conditions text,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  sent_at timestamp without time zone,
+                  accepted_at timestamp without time zone,
+                  rejected_at timestamp without time zone,
+                  CONSTRAINT quotes_pkey PRIMARY KEY (id),
+                  CONSTRAINT quotes_lead_id_fkey FOREIGN KEY (lead_id) REFERENCES public.leads(id),
+                  CONSTRAINT quotes_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id),
+                  CONSTRAINT quotes_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id)
+                );<br>
+                CREATE TABLE public.reports (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  name text NOT NULL,
+                  description text,<br>
+                  report_type text,
+                  filters jsonb,
+                  created_by bigint,
+                  is_favorite boolean DEFAULT false,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT reports_pkey PRIMARY KEY (id),
+                  CONSTRAINT reports_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id)
+                );<br>
+                CREATE TABLE public.role_permissions (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  role_id bigint NOT NULL,
+                  permission_id bigint NOT NULL,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT role_permissions_pkey PRIMARY KEY (id),
+                  CONSTRAINT role_permissions_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.roles(id),
+                  CONSTRAINT role_permissions_permission_id_fkey FOREIGN KEY (permission_id) REFERENCES public.permissions(id)
+                );<br>
+                CREATE TABLE public.roles (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  name text NOT NULL UNIQUE,
+                  description text,<br>
+                  is_system_role boolean DEFAULT false,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT roles_pkey PRIMARY KEY (id)
+                );<br>
+                CREATE TABLE public.sales (
+                  id bigint NOT NULL DEFAULT nextval('sales_id_seq'::regclass),
+                  deal_id bigint,
+                  contact_id bigint,<br>
+                  amount numeric NOT NULL,
+                  date timestamp without time zone DEFAULT now(),
+                  notes text,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  created_by text,
+                  updated_by text,
+                  CONSTRAINT sales_pkey PRIMARY KEY (id),
+                  CONSTRAINT sales_deal_id_fkey FOREIGN KEY (deal_id) REFERENCES public.deals(id),
+                  CONSTRAINT sales_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id)
+                );<br>
+                CREATE TABLE public.support_ticket_messages (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  ticket_id bigint NOT NULL,
+                  sender_id bigint,
+                  message text NOT NULL,
+                  attachment_url text,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT support_ticket_messages_pkey PRIMARY KEY (id),
+                  CONSTRAINT support_ticket_messages_ticket_id_fkey FOREIGN KEY (ticket_id) REFERENCES public.support_tickets(id),
+                  CONSTRAINT support_ticket_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id)
+                );<br>
+                CREATE TABLE public.support_tickets (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  ticket_number text NOT NULL UNIQUE,
+                  contact_id bigint,<br>
+                  organization_id bigint,<br>
+                  subject text NOT NULL,
+                  description text,<br>
+                  priority text DEFAULT 'medium'::text,<br>
+                  status text DEFAULT 'open'::text,
+                  assigned_to bigint,<br>
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  resolved_at timestamp without time zone,
+                  sla_due_at timestamp without time zone,
+                  CONSTRAINT support_tickets_pkey PRIMARY KEY (id),
+                  CONSTRAINT support_tickets_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id),
+                  CONSTRAINT support_tickets_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id),
+                  CONSTRAINT support_tickets_assigned_to_fkey FOREIGN KEY (assigned_to) REFERENCES public.users(id)
+                );<br>
+                CREATE TABLE public.tasks (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  title text NOT NULL,<br>
+                  description text,<br>
+                  due_date date,
+                  status text DEFAULT 'open'::text,
+                  priority text DEFAULT 'medium'::text,<br>
+                  assigned_to bigint,<br>
+                  lead_id bigint,<br>
+                  contact_id bigint,<br>
+                  completed_at timestamp without time zone,<br>
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT tasks_pkey PRIMARY KEY (id),
+                  CONSTRAINT tasks_lead_id_fkey FOREIGN KEY (lead_id) REFERENCES public.leads(id),
+                  CONSTRAINT tasks_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contacts(id)
+                );<br>
+                CREATE TABLE public.user_permissions (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  user_id bigint NOT NULL,
+                  permission text NOT NULL,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT user_permissions_pkey PRIMARY KEY (id),
+                  CONSTRAINT user_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+                );<br>
+                CREATE TABLE public.user_roles (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  user_id bigint NOT NULL,
+                  role_id bigint NOT NULL,
+                  assigned_at timestamp without time zone DEFAULT now(),
+                  assigned_by bigint,
+                  CONSTRAINT user_roles_pkey PRIMARY KEY (id),
+                  CONSTRAINT user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
+                  CONSTRAINT user_roles_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.roles(id),
+                  CONSTRAINT user_roles_assigned_by_fkey FOREIGN KEY (assigned_by) REFERENCES public.users(id)
+                );<br>
+                CREATE TABLE public.user_sessions (
+                  id uuid NOT NULL DEFAULT gen_random_uuid(),
+                  user_id uuid,
+                  token character varying NOT NULL UNIQUE,
+                  expires_at timestamp without time zone NOT NULL,
+                  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+                  CONSTRAINT user_sessions_pkey PRIMARY KEY (id),
+                  CONSTRAINT user_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users_signup(id)
+                );<br>
+                CREATE TABLE public.users (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  email text NOT NULL UNIQUE,
+                  password_hash text,
+                  first_name text,
+                  last_name text,
+                  profile_picture_url text,
+                  role text DEFAULT 'user'::text,
+                  department text,
+                  phone text,
+                  is_active boolean DEFAULT true,
+                  last_login timestamp without time zone,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  CONSTRAINT users_pkey PRIMARY KEY (id)
+                );<br>
+                CREATE TABLE public.users_signup (
+                  id uuid NOT NULL DEFAULT gen_random_uuid(),
+                  email character varying NOT NULL UNIQUE,
+                  password_hash character varying NOT NULL,
+                  first_name character varying,
+                  last_name character varying,
+                  company character varying,
+                  phone character varying,
+                  role character varying DEFAULT 'user'::character varying,
+                  status character varying DEFAULT 'active'::character varying,
+                  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+                  updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+                  CONSTRAINT users_signup_pkey PRIMARY KEY (id)
+                );<br>
+                CREATE TABLE public.workflows (
+                  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,<br>
+                  name text NOT NULL,
+                  description text,<br>
+                  trigger text NOT NULL,
+                  action text NOT NULL,<br>
+                  enabled boolean DEFAULT true,
+                  created_at timestamp without time zone DEFAULT now(),<br>
+                  updated_at timestamp without time zone DEFAULT now(),<br>
+                  created_by bigint,
+                  CONSTRAINT workflows_pkey PRIMARY KEY (id),
+                  CONSTRAINT workflows_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id)
+                );<br></p>
+        </div>
+    </div>
+</body>
+</html>
+
