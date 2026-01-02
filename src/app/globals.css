@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import 'react-day-picker/dist/style.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Salesforce-inspired color palette */
+    --background: 210 45% 98%;
+    --foreground: 210 15% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 15% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 15% 20%;
+    /* Salesforce Blue (#0070D2) */
+    --primary: 208 96% 44%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 18% 90%;
+    --secondary-foreground: 210 15% 20%;
+    --muted: 210 15% 92%;
+    --muted-foreground: 210 15% 50%;
+    --accent: 201 84% 44%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 15% 88%;
+    --input: 210 15% 95%;
+    --ring: 208 96% 44%;
+    --chart-1: 208 96% 44%;
+    --chart-2: 162 79% 46%;
+    --chart-3: 201 84% 44%;
+    --chart-4: 344 78% 48%;
+    --chart-5: 271 81% 52%;
+    --radius: 0.375rem;
+    --sidebar-background: 210 35% 97%;
+    --sidebar-foreground: 210 15% 20%;
+    --sidebar-primary: 208 96% 44%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 208 96% 50%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 210 15% 90%;
+    --sidebar-ring: 208 96% 44%;
+    /* Salesforce semantic colors */
+    --success: 162 79% 46%;
+    --warning: 38 92% 50%;
+    --info: 201 84% 44%;
+  }
+
+  .dark {
+    --background: 210 30% 15%;
+    --foreground: 210 20% 98%;
+    --card: 210 35% 18%;
+    --card-foreground: 210 20% 98%;
+    --popover: 210 35% 18%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 208 96% 54%;
+    --primary-foreground: 210 30% 12%;
+    --secondary: 210 35% 25%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 210 35% 28%;
+    --muted-foreground: 210 20% 72%;
+    --accent: 201 84% 54%;
+    --accent-foreground: 210 30% 12%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 30% 12%;
+    --border: 210 35% 25%;
+    --input: 210 35% 22%;
+    --ring: 208 96% 54%;
+    --chart-1: 208 96% 54%;
+    --chart-2: 162 79% 56%;
+    --chart-3: 201 84% 54%;
+    --chart-4: 344 78% 58%;
+    --chart-5: 271 81% 62%;
+    --sidebar-background: 210 38% 16%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-primary: 208 96% 54%;
+    --sidebar-primary-foreground: 210 30% 12%;
+    --sidebar-accent: 208 96% 60%;
+    --sidebar-accent-foreground: 210 30% 12%;
+    --sidebar-border: 210 35% 25%;
+    --sidebar-ring: 208 96% 54%;
+    --success: 162 79% 56%;
+    --warning: 38 92% 60%;
+    --info: 201 84% 54%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+}
+/* React Day Picker Styling */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: hsl(208, 96%, 44%);
+  --rdp-background-color: hsl(208, 96%, 44%);
+  margin: 0;
+}
+
+.rdp-caption {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem;
+  align-items: center;
+}
+
+.rdp-head_cell {
+  border-radius: 0.375rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.rdp-cell {
+  position: relative;
+}
+
+.rdp-day {
+  border-radius: 0.375rem;
+  font-weight: 500;
+}
+
+.rdp-day_selected:not([disabled]) {
+  background-color: hsl(208, 96%, 44%);
+  color: white;
+  font-weight: 700;
+}
+
+.rdp-day_today:not(.rdp-day_selected) {
+  border: 2px solid hsl(208, 96%, 44%);
+  font-weight: 700;
+}
+
+.rdp-day:hover {
+  background-color: hsl(208, 96%, 50%);
+  color: white;
+}
